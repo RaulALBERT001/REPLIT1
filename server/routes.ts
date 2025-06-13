@@ -348,6 +348,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ];
       }
       
+      // Clear existing non-fixed challenges before adding new ones
+      await storage.clearNonFixedChallenges();
+      
       // Save generated challenges to database
       const savedChallenges = [];
       for (const challengeData of generatedChallenges) {

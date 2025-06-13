@@ -20,6 +20,7 @@ export interface IStorage {
   getChallenges(): Promise<Challenge[]>;
   getFixedChallenges(): Promise<Challenge[]>;
   createChallenge(challenge: InsertChallenge): Promise<Challenge>;
+  clearNonFixedChallenges(): Promise<void>;
 
   // Challenge progress
   getUserChallengeProgress(userId: string): Promise<UserChallengeProgress[]>;
@@ -119,6 +120,17 @@ export class DatabaseStorage implements IStorage {
   async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
     const [newChallenge] = await db.insert(challenges).values(challenge).returning();
     return newChallenge;
+  }
+
+  async clearNonFixedChallenges(): Promise<void> {
+    // Delete progress for non-fixed challenges to avoid foreign key constraint violations
+    await db.delete(userChallengeProgress).where(
+      eq(userChallengeProgress.challenge_id, 
+        db.select({ id: challenges.id }).from(challenges).where(eq(challenges.is_fixed, false))
+      )
+    );
+    // Then delete non-fixed challenges
+    await db.delete(challenges).where(eq(challenges.is_fixed, false));
   }
 
   // Challenge progress
