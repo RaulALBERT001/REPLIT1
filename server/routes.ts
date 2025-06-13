@@ -78,26 +78,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Seed quiz questions if empty
       if (existingQuestions.length === 0) {
-        const defaultQuestions = [
+        const allMockedQuestions = [
           {
             question: "Qual é o principal gás responsável pelo efeito estufa?",
             options: ["Oxigênio", "Dióxido de Carbono", "Nitrogênio", "Hidrogênio"],
             correct_answer: 1,
-            points: 5
+            points: 10
           },
           {
             question: "Quantos anos uma garrafa PET leva para se degradar?",
             options: ["50 anos", "100 anos", "400 anos", "1000 anos"],
             correct_answer: 2,
-            points: 5
+            points: 10
           },
           {
             question: "Qual cor de lixeira é destinada ao vidro na coleta seletiva?",
             options: ["Verde", "Azul", "Amarelo", "Vermelho"],
             correct_answer: 0,
-            points: 5
+            points: 10
+          },
+          {
+            question: "Qual é a principal fonte de energia renovável no Brasil?",
+            options: ["Energia solar", "Energia hidrelétrica", "Energia eólica", "Energia nuclear"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Quanto tempo leva para uma sacola plástica se degradar no meio ambiente?",
+            options: ["1-2 anos", "10-20 anos", "100-400 anos", "1000+ anos"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "Qual prática NÃO contribui para a redução do consumo de água?",
+            options: ["Tomar banhos mais curtos", "Consertar vazamentos", "Deixar a torneira aberta ao escovar os dentes", "Usar máquina de lavar com carga completa"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "O que significa a sigla 'CO2' no contexto ambiental?",
+            options: ["Carbono e Oxigênio", "Dióxido de Carbono", "Monóxido de Carbono", "Carbono Orgânico"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Qual é a melhor forma de descartar pilhas e baterias?",
+            options: ["Lixo comum", "Lixo reciclável", "Pontos de coleta específicos", "Enterrar no quintal"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "Qual material demora MAIS tempo para se degradar na natureza?",
+            options: ["Papel", "Vidro", "Casca de banana", "Folhas"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Qual cor de lixeira é destinada ao papel na coleta seletiva?",
+            options: ["Verde", "Azul", "Amarelo", "Vermelho"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Qual dessas ações contribui MAIS para reduzir a pegada de carbono?",
+            options: ["Reciclar papel", "Usar transporte público", "Desligar as luzes", "Plantar uma árvore"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Quantos litros de água são necessários para produzir 1kg de carne bovina?",
+            options: ["500 litros", "2.000 litros", "15.000 litros", "50.000 litros"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "Qual é o protocolo internacional mais importante sobre mudanças climáticas?",
+            options: ["Protocolo de Kyoto", "Acordo de Paris", "Protocolo de Montreal", "Agenda 2030"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Qual tipo de lâmpada consome MENOS energia?",
+            options: ["Incandescente", "Fluorescente", "LED", "Halógena"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "O que é compostagem?",
+            options: ["Queima de lixo orgânico", "Decomposição natural de resíduos orgânicos", "Reciclagem de plásticos", "Tratamento de água"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Qual gás é principalmente responsável pela destruição da camada de ozônio?",
+            options: ["CO2", "CFC", "CH4", "N2O"],
+            correct_answer: 1,
+            points: 10
+          },
+          {
+            question: "Qual a porcentagem da superfície terrestre coberta por água?",
+            options: ["50%", "60%", "71%", "80%"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "Qual dessas opções é uma fonte de energia NÃO renovável?",
+            options: ["Energia solar", "Energia eólica", "Carvão mineral", "Energia hidrelétrica"],
+            correct_answer: 2,
+            points: 10
+          },
+          {
+            question: "Quantos anos uma lata de alumínio leva para se degradar?",
+            options: ["10 anos", "50 anos", "200 anos", "500 anos"],
+            correct_answer: 3,
+            points: 10
+          },
+          {
+            question: "Qual é o maior produtor de lixo eletrônico per capita do mundo?",
+            options: ["China", "Estados Unidos", "Noruega", "Brasil"],
+            correct_answer: 2,
+            points: 10
           }
         ];
+        
+        // Select 5 random questions for the quiz
+        const shuffledQuestions = allMockedQuestions.sort(() => Math.random() - 0.5);
+        const defaultQuestions = shuffledQuestions.slice(0, 5);
         
         for (const questionData of defaultQuestions) {
           const question = await storage.createQuizQuestion({
@@ -202,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const isCorrect = selectedAnswer === correctAnswer;
-      const pointsEarned = isCorrect ? 5 : 0; // Default 5 points per correct answer
+      const pointsEarned = isCorrect ? 10 : 0; // Default 10 points per correct answer
       
       const result = await storage.submitQuizAnswer(userId, questionId, isCorrect, pointsEarned);
       res.json(result);
@@ -262,50 +368,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/generate-quiz-questions", async (req, res) => {
     try {
-      let generatedQuestions;
+      // All available quiz questions
+      const allQuizQuestions = [
+        {
+          question: "Qual é o principal gás responsável pelo efeito estufa?",
+          options: ["Oxigênio", "Dióxido de Carbono", "Nitrogênio", "Hidrogênio"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Quantos anos uma garrafa PET leva para se degradar?",
+          options: ["50 anos", "100 anos", "400 anos", "1000 anos"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "Qual cor de lixeira é destinada ao vidro na coleta seletiva?",
+          options: ["Verde", "Azul", "Amarelo", "Vermelho"],
+          correct_answer: 0,
+          points: 10
+        },
+        {
+          question: "Qual é a principal fonte de energia renovável no Brasil?",
+          options: ["Energia solar", "Energia hidrelétrica", "Energia eólica", "Energia nuclear"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Quanto tempo leva para uma sacola plástica se degradar no meio ambiente?",
+          options: ["1-2 anos", "10-20 anos", "100-400 anos", "1000+ anos"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "Qual prática NÃO contribui para a redução do consumo de água?",
+          options: ["Tomar banhos mais curtos", "Consertar vazamentos", "Deixar a torneira aberta ao escovar os dentes", "Usar máquina de lavar com carga completa"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "O que significa a sigla 'CO2' no contexto ambiental?",
+          options: ["Carbono e Oxigênio", "Dióxido de Carbono", "Monóxido de Carbono", "Carbono Orgânico"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Qual é a melhor forma de descartar pilhas e baterias?",
+          options: ["Lixo comum", "Lixo reciclável", "Pontos de coleta específicos", "Enterrar no quintal"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "Qual material demora MAIS tempo para se degradar na natureza?",
+          options: ["Papel", "Vidro", "Casca de banana", "Folhas"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Qual cor de lixeira é destinada ao papel na coleta seletiva?",
+          options: ["Verde", "Azul", "Amarelo", "Vermelho"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Qual dessas ações contribui MAIS para reduzir a pegada de carbono?",
+          options: ["Reciclar papel", "Usar transporte público", "Desligar as luzes", "Plantar uma árvore"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Quantos litros de água são necessários para produzir 1kg de carne bovina?",
+          options: ["500 litros", "2.000 litros", "15.000 litros", "50.000 litros"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "Qual é o protocolo internacional mais importante sobre mudanças climáticas?",
+          options: ["Protocolo de Kyoto", "Acordo de Paris", "Protocolo de Montreal", "Agenda 2030"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Qual tipo de lâmpada consome MENOS energia?",
+          options: ["Incandescente", "Fluorescente", "LED", "Halógena"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "O que é compostagem?",
+          options: ["Queima de lixo orgânico", "Decomposição natural de resíduos orgânicos", "Reciclagem de plásticos", "Tratamento de água"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Qual gás é principalmente responsável pela destruição da camada de ozônio?",
+          options: ["CO2", "CFC", "CH4", "N2O"],
+          correct_answer: 1,
+          points: 10
+        },
+        {
+          question: "Qual a porcentagem da superfície terrestre coberta por água?",
+          options: ["50%", "60%", "71%", "80%"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "Qual dessas opções é uma fonte de energia NÃO renovável?",
+          options: ["Energia solar", "Energia eólica", "Carvão mineral", "Energia hidrelétrica"],
+          correct_answer: 2,
+          points: 10
+        },
+        {
+          question: "Quantos anos uma lata de alumínio leva para se degradar?",
+          options: ["10 anos", "50 anos", "200 anos", "500 anos"],
+          correct_answer: 3,
+          points: 10
+        },
+        {
+          question: "Qual é o maior produtor de lixo eletrônico per capita do mundo?",
+          options: ["China", "Estados Unidos", "Noruega", "Brasil"],
+          correct_answer: 2,
+          points: 10
+        }
+      ];
       
-      try {
-        generatedQuestions = await generateQuizQuestions();
-      } catch (openaiError) {
-        console.warn('OpenAI quiz generation failed, using fallback questions:', openaiError);
-        // Fallback quiz questions when OpenAI fails
-        generatedQuestions = [
-          {
-            question: "Qual é a principal fonte de energia renovável no Brasil?",
-            options: ["Energia solar", "Energia hidrelétrica", "Energia eólica", "Energia nuclear"],
-            correct_answer: 1,
-            points: 5
-          },
-          {
-            question: "Quanto tempo leva para uma sacola plástica se degradar no meio ambiente?",
-            options: ["1-2 anos", "10-20 anos", "100-400 anos", "1000+ anos"],
-            correct_answer: 2,
-            points: 5
-          },
-          {
-            question: "Qual prática NÃO contribui para a redução do consumo de água?",
-            options: ["Tomar banhos mais curtos", "Consertar vazamentos", "Deixar a torneira aberta ao escovar os dentes", "Usar máquina de lavar com carga completa"],
-            correct_answer: 2,
-            points: 5
-          },
-          {
-            question: "O que significa a sigla 'CO2' no contexto ambiental?",
-            options: ["Carbono e Oxigênio", "Dióxido de Carbono", "Monóxido de Carbono", "Carbono Orgânico"],
-            correct_answer: 1,
-            points: 5
-          },
-          {
-            question: "Qual é a melhor forma de descartar pilhas e baterias?",
-            options: ["Lixo comum", "Lixo reciclável", "Pontos de coleta específicos", "Enterrar no quintal"],
-            correct_answer: 2,
-            points: 5
-          }
-        ];
-      }
+      // Shuffle and select 5 random questions
+      const shuffledQuestions = allQuizQuestions.sort(() => Math.random() - 0.5);
+      const selectedQuestions = shuffledQuestions.slice(0, 5);
       
-      // Save generated questions to database
+      // Clear existing questions and save new ones
+      await storage.clearQuizQuestions();
+      
       const savedQuestions = [];
-      for (const questionData of generatedQuestions) {
+      for (const questionData of selectedQuestions) {
         const question = await storage.createQuizQuestion({
           question: questionData.question,
           options: questionData.options,

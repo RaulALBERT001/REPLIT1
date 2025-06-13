@@ -70,6 +70,9 @@ const Quiz = () => {
     setCurrentQuestion(0);
     setSelectedAnswers([]);
     setShowResults(false);
+    setAnsweredQuestions(new Set());
+    // Generate new quiz questions
+    generateQuestions.mutate();
   };
 
   const calculateScore = () => {
@@ -189,9 +192,17 @@ const Quiz = () => {
           <div className="text-center mb-8">
             <HelpCircle className="mx-auto text-blue-600 mb-4" size={48} />
             <h1 className="text-4xl font-bold text-gray-800 mb-4">Quiz de Sustentabilidade</h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 mb-4">
               Teste seus conhecimentos sobre meio ambiente e sustentabilidade!
             </p>
+            <Button
+              onClick={handleGenerateQuestions}
+              disabled={generateQuestions.isPending}
+              className="flex items-center space-x-2 mx-auto bg-green-600 hover:bg-green-700"
+            >
+              <Sparkles size={20} />
+              <span>{generateQuestions.isPending ? 'Gerando...' : 'Gerar Novo Quiz'}</span>
+            </Button>
           </div>
 
           {/* Progress */}

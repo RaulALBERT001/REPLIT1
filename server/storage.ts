@@ -28,6 +28,7 @@ export interface IStorage {
   // Quiz
   getQuizQuestions(): Promise<QuizQuestion[]>;
   createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion>;
+  clearQuizQuestions(): Promise<void>;
   
   // Quiz results
   submitQuizAnswer(userId: string, questionId: string, isCorrect: boolean, pointsEarned: number): Promise<UserQuizResult>;
@@ -185,6 +186,10 @@ export class DatabaseStorage implements IStorage {
   async createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion> {
     const [newQuestion] = await db.insert(quizQuestions).values(question).returning();
     return newQuestion;
+  }
+
+  async clearQuizQuestions(): Promise<void> {
+    await db.delete(quizQuestions);
   }
 
   // Quiz results
