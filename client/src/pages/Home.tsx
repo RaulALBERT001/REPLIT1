@@ -57,18 +57,18 @@ const Home = () => {
             Cada pequena ação conta. Junte-se a nós na missão de criar um futuro mais verde e sustentável.
           </p>
           <div className="space-x-4">
-            <a 
-              href="/desafios" 
+            <Link 
+              to="/desafios" 
               className="inline-block bg-white text-green-600 px-6 py-3 rounded-md font-semibold hover:bg-green-50 transition-colors"
             >
               Ver Desafios
-            </a>
-            <a 
-              href="/conscientizacao" 
+            </Link>
+            <Link 
+              to="/conscientizacao" 
               className="inline-block border-2 border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-green-700 transition-colors"
             >
               Aprender Mais
-            </a>
+            </Link>
           </div>
         </div>
       </div>

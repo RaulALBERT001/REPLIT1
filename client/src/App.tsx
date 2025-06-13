@@ -2,8 +2,9 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Route, Switch } from "wouter";
+import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
 import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -14,8 +15,6 @@ import Desafios from "./pages/Desafios";
 import Quiz from "./pages/Quiz";
 import PontosColeta from "./pages/PontosColeta";
 import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
