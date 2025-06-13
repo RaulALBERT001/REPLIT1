@@ -21,6 +21,7 @@ export interface IStorage {
   getFixedChallenges(): Promise<Challenge[]>;
   createChallenge(challenge: InsertChallenge): Promise<Challenge>;
   clearNonFixedChallenges(): Promise<void>;
+  clearAllChallenges(): Promise<void>;
 
   // Challenge progress
   getUserChallengeProgress(userId: string): Promise<UserChallengeProgress[]>;
@@ -137,6 +138,14 @@ export class DatabaseStorage implements IStorage {
     
     // Then delete non-fixed challenges
     await db.delete(challenges).where(eq(challenges.is_fixed, false));
+  }
+
+  async clearAllChallenges(): Promise<void> {
+    // Delete all user challenge progress first
+    await db.delete(userChallengeProgress);
+    
+    // Then delete all challenges
+    await db.delete(challenges);
   }
 
   // Challenge progress
