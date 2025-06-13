@@ -332,28 +332,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Generation routes
   app.post("/api/generate-challenges", async (req, res) => {
     try {
-      let generatedChallenges;
+      // Use fallback challenges directly to avoid OpenAI quota issues
+      const fallbackChallenges = [
+        { challenge: "Substitua uma refeição por uma opção mais sustentável hoje", points: 8 },
+        { challenge: "Use transporte público ou bicicleta em vez do carro", points: 10 },
+        { challenge: "Evite usar produtos descartáveis por um dia inteiro", points: 12 },
+        { challenge: "Plante uma semente ou cuide de uma planta", points: 6 },
+        { challenge: "Desligue aparelhos eletrônicos da tomada quando não estiver usando", points: 5 },
+        { challenge: "Faça uma composteira caseira com restos orgânicos", points: 9 },
+        { challenge: "Reduza o tempo do banho em pelo menos 2 minutos", points: 7 },
+        { challenge: "Use sacolas reutilizáveis para todas as compras", points: 6 },
+        { challenge: "Conserte algo quebrado ao invés de jogar fora", points: 11 },
+        { challenge: "Doe roupas ou objetos que não usa mais", points: 8 }
+      ];
       
-      try {
-        generatedChallenges = await generateChallenges();
-      } catch (openaiError) {
-        console.warn('OpenAI generation failed, using fallback challenges:', openaiError);
-        // Fallback challenges when OpenAI fails
-        generatedChallenges = [
-          { challenge: "Substitua uma refeição por uma opção mais sustentável hoje", points: 8 },
-          { challenge: "Use transporte público ou bicicleta em vez do carro", points: 10 },
-          { challenge: "Evite usar produtos descartáveis por um dia inteiro", points: 12 },
-          { challenge: "Plante uma semente ou cuide de uma planta", points: 6 },
-          { challenge: "Desligue aparelhos eletrônicos da tomada quando não estiver usando", points: 5 }
-        ];
-      }
+      // Randomly select 5 challenges
+      const shuffled = fallbackChallenges.sort(() => Math.random() - 0.5);
+      const selectedChallenges = shuffled.slice(0, 5);
       
       // Clear existing non-fixed challenges before adding new ones
       await storage.clearNonFixedChallenges();
       
       // Save generated challenges to database
       const savedChallenges = [];
-      for (const challengeData of generatedChallenges) {
+      for (const challengeData of selectedChallenges) {
         const challenge = await storage.createChallenge({
           challenge: challengeData.challenge,
           is_fixed: false,

@@ -123,12 +123,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async clearNonFixedChallenges(): Promise<void> {
-    // Delete progress for non-fixed challenges to avoid foreign key constraint violations
-    await db.delete(userChallengeProgress).where(
-      eq(userChallengeProgress.challenge_id, 
-        db.select({ id: challenges.id }).from(challenges).where(eq(challenges.is_fixed, false))
-      )
-    );
+    // First get the IDs of non-fixed challenges
+    const nonFixedChallengeIds = await db.select({ id: challenges.id })
+      .from(challenges)
+      .where(eq(challenges.is_fixed, false));
+    
+    // Delete progress for each non-fixed challenge
+    for (const challenge of nonFixedChallengeIds) {
+      await db.delete(userChallengeProgress).where(
+        eq(userChallengeProgress.challenge_id, challenge.id)
+      );
+    }
+    
     // Then delete non-fixed challenges
     await db.delete(challenges).where(eq(challenges.is_fixed, false));
   }
