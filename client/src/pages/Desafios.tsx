@@ -1,31 +1,36 @@
-
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import ChallengeItem from '../components/ChallengeItem';
 import RandomChallenge from '../components/RandomChallenge';
 import { useApiChallenges, useUserProgress, useToggleChallengeScore, useGenerateChallenges, useUserScore, useSeedData } from '../hooks/useScoring';
 import { Target, Trophy, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import RankMedal from '../components/RankMedal';
+import RankUpgradeModal from '../components/RankUpgradeModal';
 
 const Desafios = () => {
   const { data: challenges, isLoading: challengesLoading } = useApiChallenges();
   const { data: userProgress, isLoading: progressLoading } = useUserProgress();
-  const { data: userScore } = useUserScore();
-  const toggleProgress = useToggleChallengeScore();
-  const generateChallenges = useGenerateChallenges();
-  const seedData = useSeedData();
+  const { data: userScore, isLoading: scoreLoading } = useUserScore();
+  const toggleChallengeMutation = useToggleChallengeScore();
+  const generateChallengesMutation = useGenerateChallenges();
+  const seedDataMutation = useSeedData();
+
+  const [showRankUpgrade, setShowRankUpgrade] = useState(false);
+  const [upgradeInfo, setUpgradeInfo] = useState({ rank: '', points: 0 });
+  const previousRankRef = useRef<string>('');
+  const previousPointsRef = useRef<number>(0);
 
   // Auto-seed data if no challenges exist
   useEffect(() => {
-    if (!challengesLoading && challenges && challenges.length === 0 && !seedData.isPending) {
+    if (!challengesLoading && challenges && challenges.length === 0 && !seedDataMutation.isPending) {
       console.log('No challenges found, seeding initial data...');
-      seedData.mutate();
+      seedDataMutation.mutate();
     }
-  }, [challenges, challengesLoading, seedData]);
+  }, [challenges, challengesLoading, seedDataMutation]);
 
   const progressMap = useMemo(() => {
     if (!userProgress) return new Map();
-    
+
     const map = new Map();
     userProgress.forEach((progress: any) => {
       map.set(progress.challenge_id, progress.is_completed);
@@ -38,15 +43,40 @@ const Desafios = () => {
     return challenges.filter((challenge: any) => progressMap.get(challenge.id)).length;
   }, [challenges, progressMap]);
 
+  // Detect rank upgrades
+  useEffect(() => {
+    if (userScore && !scoreLoading) {
+      const currentRank = userScore.rank;
+      const currentPoints = userScore.total_points;
+
+      // Check if this is not the initial load and rank has upgraded
+      if (previousRankRef.current && previousRankRef.current !== currentRank) {
+        // Only show popup for upgrades (not downgrades)
+        const rankOrder = { 'bronze': 0, 'silver': 1, 'gold': 2 };
+        if (rankOrder[currentRank as keyof typeof rankOrder] > rankOrder[previousRankRef.current as keyof typeof rankOrder]) {
+          setUpgradeInfo({ rank: currentRank, points: currentPoints });
+          setShowRankUpgrade(true);
+        }
+      }
+
+      previousRankRef.current = currentRank;
+      previousPointsRef.current = currentPoints;
+    }
+  }, [userScore, scoreLoading]);
+
   const handleToggleChallenge = async (challengeId: string) => {
-    toggleProgress.mutate({ challengeId });
+    try {
+      await toggleChallengeMutation.mutateAsync({ challengeId });
+    } catch (error) {
+      console.error('Error toggling challenge:', error);
+    }
   };
 
   const handleGenerateChallenges = () => {
-    generateChallenges.mutate();
+    generateChallengesMutation.mutate();
   };
 
-  if (challengesLoading || progressLoading) {
+  if (challengesLoading || progressLoading || scoreLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -59,6 +89,12 @@ const Desafios = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <RankUpgradeModal
+        isOpen={showRankUpgrade}
+        onClose={() => setShowRankUpgrade(false)}
+        newRank={upgradeInfo.rank}
+        points={upgradeInfo.points}
+      />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -93,7 +129,7 @@ const Desafios = () => {
               <div className="text-gray-500">Completo</div>
             </div>
           </div>
-          
+
           {/* Progress Bar */}
           <div className="mt-4 bg-gray-200 rounded-full h-3">
             <div 
@@ -112,10 +148,10 @@ const Desafios = () => {
             </div>
             <Button 
               onClick={handleGenerateChallenges}
-              disabled={generateChallenges.isPending}
+              disabled={generateChallengesMutation.isPending}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {generateChallenges.isPending ? (
+              {generateChallengesMutation.isPending ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Gerando...</span>

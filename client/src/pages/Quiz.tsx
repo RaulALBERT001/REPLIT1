@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { HelpCircle, CheckCircle, XCircle, RotateCcw, Sparkles } from 'lucide-react';
 import { useApiQuizQuestions, useSubmitQuizAnswer, useGenerateQuizQuestions, useUserScore, useSeedData } from '../hooks/useScoring';
 import { Button } from '@/components/ui/button';
@@ -32,23 +31,23 @@ const Quiz = () => {
 
   const handleNext = () => {
     if (!quizData) return;
-    
+
     // Submit answer for current question if not already answered
     if (!answeredQuestions.has(currentQuestion)) {
       const currentQuestionData = quizData[currentQuestion];
       const selectedAnswer = selectedAnswers[currentQuestion];
-      
+
       if (selectedAnswer !== undefined) {
         submitAnswer.mutate({
           questionId: currentQuestionData.id,
           selectedAnswer,
           correctAnswer: currentQuestionData.correct_answer
         });
-        
+
         setAnsweredQuestions(prev => new Set(prev).add(currentQuestion));
       }
     }
-    
+
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
@@ -263,7 +262,7 @@ const Quiz = () => {
               >
                 Anterior
               </button>
-              
+
               <button
                 onClick={handleNext}
                 disabled={selectedAnswers[currentQuestion] === undefined}

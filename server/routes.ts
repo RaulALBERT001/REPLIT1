@@ -11,7 +11,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const score = await storage.getUserScore(userId);
-      
+
       if (!score) {
         // Create initial score for new user
         const newScore = await storage.createUserScore({
@@ -23,7 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return res.json(newScore);
       }
-      
+
       res.json(score);
     } catch (error) {
       console.error('Error fetching user score:', error);
@@ -47,12 +47,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const existingChallenges = await storage.getChallenges();
       const existingQuestions = await storage.getQuizQuestions();
-      
+
       let seededData = {
         challenges: [],
         questions: []
       };
-      
+
       // Seed challenges if empty
       if (existingChallenges.length === 0) {
         const defaultChallenges = [
@@ -65,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { challenge: "Desligue aparelhos eletrônicos quando não estiver usando", points: 6 },
           { challenge: "Faça uma refeição sem carne hoje", points: 8 }
         ];
-        
+
         for (const challengeData of defaultChallenges) {
           const challenge = await storage.createChallenge({
             challenge: challengeData.challenge,
@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           seededData.challenges.push(challenge);
         }
       }
-      
+
       // Seed quiz questions if empty
       if (existingQuestions.length === 0) {
         const allMockedQuestions = [
@@ -200,11 +200,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             points: 10
           }
         ];
-        
+
         // Select 5 random questions for the quiz
         const shuffledQuestions = allMockedQuestions.sort(() => Math.random() - 0.5);
         const defaultQuestions = shuffledQuestions.slice(0, 5);
-        
+
         for (const questionData of defaultQuestions) {
           const question = await storage.createQuizQuestion({
             question: questionData.question,
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           seededData.questions.push(question);
         }
       }
-      
+
       res.json(seededData);
     } catch (error) {
       console.error('Error seeding data:', error);
@@ -265,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId || !challengeId) {
         return res.status(400).json({ error: 'userId and challengeId are required' });
       }
-      
+
       const progress = await storage.toggleChallengeProgress(userId, challengeId);
       res.json(progress);
     } catch (error) {
@@ -302,14 +302,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/submit-quiz-answer", async (req, res) => {
     try {
       const { userId, questionId, selectedAnswer, correctAnswer } = req.body;
-      
+
       if (!userId || !questionId || selectedAnswer === undefined || correctAnswer === undefined) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
-      
+
       const isCorrect = selectedAnswer === correctAnswer;
       const pointsEarned = isCorrect ? 10 : 0; // Default 10 points per correct answer
-      
+
       const result = await storage.submitQuizAnswer(userId, questionId, isCorrect, pointsEarned);
       res.json(result);
     } catch (error) {
@@ -345,14 +345,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { challenge: "Conserte algo quebrado ao invés de jogar fora", points: 11 },
         { challenge: "Doe roupas ou objetos que não usa mais", points: 8 }
       ];
-      
+
       // Randomly select 5 challenges
       const shuffled = fallbackChallenges.sort(() => Math.random() - 0.5);
       const selectedChallenges = shuffled.slice(0, 5);
-      
+
       // Clear existing non-fixed challenges before adding new ones
       await storage.clearNonFixedChallenges();
-      
+
       // Save generated challenges to database
       const savedChallenges = [];
       for (const challengeData of selectedChallenges) {
@@ -363,7 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         savedChallenges.push(challenge);
       }
-      
+
       res.json(savedChallenges);
     } catch (error) {
       console.error('Error generating challenges:', error);
@@ -496,14 +496,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           points: 10
         }
       ];
-      
+
       // Shuffle and select 5 random questions
       const shuffledQuestions = allQuizQuestions.sort(() => Math.random() - 0.5);
       const selectedQuestions = shuffledQuestions.slice(0, 5);
-      
+
       // Clear existing questions and save new ones
       await storage.clearQuizQuestions();
-      
+
       const savedQuestions = [];
       for (const questionData of selectedQuestions) {
         const question = await storage.createQuizQuestion({
@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         savedQuestions.push(question);
       }
-      
+
       res.json(savedQuestions);
     } catch (error) {
       console.error('Error generating quiz questions:', error);
@@ -525,4 +525,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   return httpServer;
+}
+
+// Function to determine rank based on total points
+export function determineRank(totalPoints: number): string {
+  let rank = 'bronze';
+  if (totalPoints >= 200) {
+    rank = 'gold';
+  } else if (totalPoints >= 100) {
+    rank = 'silver';
+  }
+  return rank;
 }
