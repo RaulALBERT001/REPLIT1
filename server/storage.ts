@@ -10,26 +10,26 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // User scores
   getUserScore(userId: string): Promise<UserScore | undefined>;
   createUserScore(userScore: InsertUserScore): Promise<UserScore>;
   updateUserScore(userId: string, points: number, type: 'challenge' | 'quiz'): Promise<UserScore>;
-  
+
   // Challenges
   getChallenges(): Promise<Challenge[]>;
   getFixedChallenges(): Promise<Challenge[]>;
   createChallenge(challenge: InsertChallenge): Promise<Challenge>;
-  
+
   // Challenge progress
   getUserChallengeProgress(userId: string): Promise<UserChallengeProgress[]>;
   toggleChallengeProgress(userId: string, challengeId: string): Promise<UserChallengeProgress>;
-  
+
   // Quiz
   getQuizQuestions(): Promise<QuizQuestion[]>;
   createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion>;
   clearQuizQuestions(): Promise<void>;
-  
+
   // Quiz results
   submitQuizAnswer(userId: string, questionId: string, isCorrect: boolean, pointsEarned: number): Promise<UserQuizResult>;
   getUserQuizResults(userId: string): Promise<UserQuizResult[]>;
@@ -67,7 +67,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserScore(userId: string, points: number, type: 'challenge' | 'quiz'): Promise<UserScore> {
     const currentScore = await this.getUserScore(userId);
-    
+
     if (!currentScore) {
       // Create new score record
       const newScore: InsertUserScore = {
@@ -138,11 +138,11 @@ export class DatabaseStorage implements IStorage {
       );
 
     const [challenge] = await db.select().from(challenges).where(eq(challenges.id, challengeId));
-    
+
     if (existingProgress) {
       const newCompletedState = !existingProgress.is_completed;
       const pointsEarned = newCompletedState ? challenge.points : -existingProgress.points_earned;
-      
+
       // Update user score
       if (pointsEarned !== 0) {
         await this.updateUserScore(userId, pointsEarned, 'challenge');
@@ -163,7 +163,7 @@ export class DatabaseStorage implements IStorage {
 
     // Create new progress record
     await this.updateUserScore(userId, challenge.points, 'challenge');
-    
+
     const [newProgress] = await db
       .insert(userChallengeProgress)
       .values({
@@ -189,6 +189,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async clearQuizQuestions(): Promise<void> {
+    // First delete all user quiz results to avoid foreign key constraint violations
+    await db.delete(userQuizResults);
+    // Then delete all quiz questions
     await db.delete(quizQuestions);
   }
 
