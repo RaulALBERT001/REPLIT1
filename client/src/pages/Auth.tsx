@@ -15,9 +15,14 @@ const Auth = () => {
   console.log('Auth page - Current user:', user?.email);
 
   // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      console.log('User is logged in, redirecting to home');
+      setLocation('/');
+    }
+  }, [user, setLocation]);
+
   if (user) {
-    console.log('User is logged in, redirecting to home');
-    setLocation('/');
     return null;
   }
 
