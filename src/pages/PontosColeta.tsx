@@ -1,8 +1,37 @@
 
 import { MapPin, Recycle } from 'lucide-react';
-import collectionPointsData from '../data/collection-points.json';
+import { useCollectionPoints } from '../hooks/useSupabaseData';
 
 const PontosColeta = () => {
+  const { data: collectionPoints, isLoading, error } = useCollectionPoints();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando pontos de coleta...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar pontos de coleta</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -17,34 +46,37 @@ const PontosColeta = () => {
 
         {/* Collection Points Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {collectionPointsData.map((point) => (
-            <div key={point.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start space-x-3 mb-4">
-                <MapPin className="text-green-600 mt-1 flex-shrink-0" size={24} />
+          {collectionPoints?.map((point) => {
+            const wasteTypes = Array.isArray(point.waste_types) ? point.waste_types : JSON.parse(point.waste_types as string);
+            return (
+              <div key={point.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start space-x-3 mb-4">
+                  <MapPin className="text-green-600 mt-1 flex-shrink-0" size={24} />
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{point.name}</h3>
+                    <p className="text-gray-600 mb-4">{point.address}</p>
+                  </div>
+                </div>
+                
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{point.name}</h3>
-                  <p className="text-gray-600 mb-4">{point.address}</p>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <Recycle size={16} className="mr-2" />
+                    Tipos de Resíduo Aceitos:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {wasteTypes.map((type: string, index: number) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-              
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                  <Recycle size={16} className="mr-2" />
-                  Tipos de Resíduo Aceitos:
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {point.wasteTypes.map((type, index) => (
-                    <span 
-                      key={index}
-                      className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
-                    >
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Info Section */}

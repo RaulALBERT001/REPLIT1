@@ -1,37 +1,48 @@
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import ChallengeItem from '../components/ChallengeItem';
 import RandomChallenge from '../components/RandomChallenge';
+import { useFixedChallenges, useUserProgress, useToggleChallengeProgress } from '../hooks/useSupabaseData';
 import { Target, Trophy } from 'lucide-react';
 
-const fixedChallenges = [
-  "Use uma garrafa reutilizável em vez de garrafas plásticas descartáveis",
-  "Separe corretamente o lixo reciclável do orgânico",
-  "Desligue aparelhos eletrônicos da tomada quando não estiver usando",
-  "Use sacolas reutilizáveis para fazer compras",
-  "Evite desperdício de comida planejando suas refeições"
-];
-
 const Desafios = () => {
-  const [completedChallenges, setCompletedChallenges] = useState<boolean[]>([]);
+  const { data: challenges, isLoading: challengesLoading } = useFixedChallenges();
+  const { data: userProgress, isLoading: progressLoading } = useUserProgress();
+  const toggleProgress = useToggleChallengeProgress();
 
-  useEffect(() => {
-    const saved = localStorage.getItem('challengesProgress');
-    if (saved) {
-      setCompletedChallenges(JSON.parse(saved));
-    } else {
-      setCompletedChallenges(new Array(fixedChallenges.length).fill(false));
-    }
-  }, []);
+  const progressMap = useMemo(() => {
+    if (!userProgress) return new Map();
+    
+    const map = new Map();
+    userProgress.forEach(progress => {
+      map.set(progress.challenge_id, progress.is_completed);
+    });
+    return map;
+  }, [userProgress]);
 
-  const toggleChallenge = (index: number) => {
-    const newCompleted = [...completedChallenges];
-    newCompleted[index] = !newCompleted[index];
-    setCompletedChallenges(newCompleted);
-    localStorage.setItem('challengesProgress', JSON.stringify(newCompleted));
+  const completedCount = useMemo(() => {
+    if (!challenges) return 0;
+    return challenges.filter(challenge => progressMap.get(challenge.id)).length;
+  }, [challenges, progressMap]);
+
+  const handleToggleChallenge = async (challengeId: string) => {
+    const isCurrentlyCompleted = progressMap.get(challengeId) || false;
+    toggleProgress.mutate({
+      challengeId,
+      isCompleted: !isCurrentlyCompleted
+    });
   };
 
-  const completedCount = completedChallenges.filter(Boolean).length;
+  if (challengesLoading || progressLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando desafios...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,13 +68,15 @@ const Desafios = () => {
               <Trophy className="text-yellow-600" size={32} />
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {completedCount} de {fixedChallenges.length} Desafios Concluídos
+                  {completedCount} de {challenges?.length || 0} Desafios Concluídos
                 </h2>
                 <p className="text-gray-600">Continue assim! Cada ação conta para um planeta melhor.</p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600">{Math.round((completedCount / fixedChallenges.length) * 100)}%</div>
+              <div className="text-3xl font-bold text-blue-600">
+                {challenges?.length ? Math.round((completedCount / challenges.length) * 100) : 0}%
+              </div>
               <div className="text-gray-500">Completo</div>
             </div>
           </div>
@@ -72,7 +85,7 @@ const Desafios = () => {
           <div className="mt-4 bg-gray-200 rounded-full h-3">
             <div 
               className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${(completedCount / fixedChallenges.length) * 100}%` }}
+              style={{ width: `${challenges?.length ? (completedCount / challenges.length) * 100 : 0}%` }}
             ></div>
           </div>
         </div>
@@ -80,18 +93,18 @@ const Desafios = () => {
         {/* Challenges List */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seus Desafios</h2>
-          {fixedChallenges.map((challenge, index) => (
+          {challenges?.map((challenge) => (
             <ChallengeItem
-              key={index}
-              challenge={challenge}
-              isCompleted={completedChallenges[index] || false}
-              onToggle={() => toggleChallenge(index)}
+              key={challenge.id}
+              challenge={challenge.challenge}
+              isCompleted={progressMap.get(challenge.id) || false}
+              onToggle={() => handleToggleChallenge(challenge.id)}
             />
           ))}
         </div>
 
         {/* Completion Message */}
-        {completedCount === fixedChallenges.length && (
+        {challenges && completedCount === challenges.length && challenges.length > 0 && (
           <div className="mt-8 bg-green-600 text-white p-8 rounded-lg text-center">
             <Trophy className="mx-auto mb-4" size={48} />
             <h2 className="text-2xl font-bold mb-2">Parabéns! 🎉</h2>

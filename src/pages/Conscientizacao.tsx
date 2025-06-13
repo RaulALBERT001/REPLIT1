@@ -1,9 +1,27 @@
 
 import ArticleCard from '../components/ArticleCard';
-import articlesData from '../data/articles.json';
+import { useArticles } from '../hooks/useSupabaseData';
 import { BookOpen } from 'lucide-react';
 
 const Conscientizacao = () => {
+  const { data: articles, isLoading, error } = useArticles();
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar artigos</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -17,16 +35,31 @@ const Conscientizacao = () => {
         </div>
 
         {/* Articles Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articlesData.map((article) => (
-            <ArticleCard
-              key={article.id}
-              title={article.title}
-              description={article.description}
-              image={article.image}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                <div className="w-full h-48 bg-gray-200"></div>
+                <div className="p-6">
+                  <div className="h-6 bg-gray-200 rounded mb-3"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {articles?.map((article) => (
+              <ArticleCard
+                key={article.id}
+                title={article.title}
+                description={article.description}
+                image={article.image || '/placeholder.svg'}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Additional Info */}
         <div className="mt-12 bg-green-600 text-white p-8 rounded-lg">

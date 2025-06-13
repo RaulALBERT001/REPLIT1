@@ -1,9 +1,11 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Target, HelpCircle, MapPin } from 'lucide-react';
+import { Home, BookOpen, Target, HelpCircle, MapPin, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { path: '/', label: 'Início', icon: Home },
@@ -37,6 +39,31 @@ const Header = () => {
               </Link>
             ))}
           </nav>
+
+          {/* User menu */}
+          {user ? (
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-2 text-green-100">
+                <User size={16} />
+                <span className="text-sm">{user.email}</span>
+              </div>
+              <button
+                onClick={signOut}
+                className="flex items-center space-x-2 px-3 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
+              >
+                <LogOut size={16} />
+                <span className="hidden md:inline">Sair</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              className="flex items-center space-x-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
+            >
+              <User size={16} />
+              <span>Entrar</span>
+            </Link>
+          )}
 
           {/* Mobile menu button */}
           <div className="md:hidden">

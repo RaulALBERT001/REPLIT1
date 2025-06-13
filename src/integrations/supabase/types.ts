@@ -9,7 +9,152 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      articles: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      challenges: {
+        Row: {
+          challenge: string
+          created_at: string
+          id: string
+          is_fixed: boolean
+        }
+        Insert: {
+          challenge: string
+          created_at?: string
+          id?: string
+          is_fixed?: boolean
+        }
+        Update: {
+          challenge?: string
+          created_at?: string
+          id?: string
+          is_fixed?: boolean
+        }
+        Relationships: []
+      }
+      collection_points: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          name: string
+          waste_types: Json
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          name: string
+          waste_types: Json
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          name?: string
+          waste_types?: Json
+        }
+        Relationships: []
+      }
+      daily_phrases: {
+        Row: {
+          created_at: string
+          id: string
+          phrase: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phrase: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phrase?: string
+        }
+        Relationships: []
+      }
+      quiz_questions: {
+        Row: {
+          correct_answer: number
+          created_at: string
+          id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          correct_answer: number
+          created_at?: string
+          id?: string
+          options: Json
+          question: string
+        }
+        Update: {
+          correct_answer?: number
+          created_at?: string
+          id?: string
+          options?: Json
+          question?: string
+        }
+        Relationships: []
+      }
+      user_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

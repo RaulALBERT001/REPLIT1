@@ -1,9 +1,10 @@
 
 import { useState } from 'react';
 import { HelpCircle, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
-import quizData from '../data/quiz.json';
+import { useQuizQuestions } from '../hooks/useSupabaseData';
 
 const Quiz = () => {
+  const { data: quizData, isLoading, error } = useQuizQuestions();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -15,6 +16,8 @@ const Quiz = () => {
   };
 
   const handleNext = () => {
+    if (!quizData) return;
+    
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
@@ -35,10 +38,38 @@ const Quiz = () => {
   };
 
   const calculateScore = () => {
+    if (!quizData) return 0;
     return selectedAnswers.reduce((score, answer, index) => {
-      return score + (answer === quizData[index].correctAnswer ? 1 : 0);
+      return score + (answer === quizData[index].correct_answer ? 1 : 0);
     }, 0);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando quiz...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !quizData || quizData.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar o quiz</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (showResults) {
     const score = calculateScore();
@@ -77,21 +108,24 @@ const Quiz = () => {
               <div className="text-left mb-8">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Respostas Detalhadas:</h3>
                 <div className="space-y-4">
-                  {quizData.map((question, index) => (
-                    <div key={question.id} className="border border-gray-200 rounded-lg p-4">
-                      <p className="font-medium text-gray-800 mb-2">{question.question}</p>
-                      <div className="flex items-center space-x-2">
-                        {selectedAnswers[index] === question.correctAnswer ? (
-                          <CheckCircle className="text-green-600" size={20} />
-                        ) : (
-                          <XCircle className="text-red-600" size={20} />
-                        )}
-                        <span className="text-sm text-gray-600">
-                          Resposta correta: {question.options[question.correctAnswer]}
-                        </span>
+                  {quizData.map((question, index) => {
+                    const options = Array.isArray(question.options) ? question.options : JSON.parse(question.options as string);
+                    return (
+                      <div key={question.id} className="border border-gray-200 rounded-lg p-4">
+                        <p className="font-medium text-gray-800 mb-2">{question.question}</p>
+                        <div className="flex items-center space-x-2">
+                          {selectedAnswers[index] === question.correct_answer ? (
+                            <CheckCircle className="text-green-600" size={20} />
+                          ) : (
+                            <XCircle className="text-red-600" size={20} />
+                          )}
+                          <span className="text-sm text-gray-600">
+                            Resposta correta: {options[question.correct_answer]}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -110,6 +144,7 @@ const Quiz = () => {
   }
 
   const question = quizData[currentQuestion];
+  const options = Array.isArray(question.options) ? question.options : JSON.parse(question.options as string);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -147,7 +182,7 @@ const Quiz = () => {
             </h2>
 
             <div className="space-y-3 mb-8">
-              {question.options.map((option, index) => (
+              {options.map((option: string, index: number) => (
                 <button
                   key={index}
                   onClick={() => handleAnswerSelect(index)}
