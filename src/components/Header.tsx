@@ -5,7 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
+
+  console.log('Header - Current user:', user?.email, 'Loading:', loading);
 
   const navItems = [
     { path: '/', label: 'Início', icon: Home },
@@ -14,6 +16,11 @@ const Header = () => {
     { path: '/quiz', label: 'Quiz', icon: HelpCircle },
     { path: '/pontos-coleta', label: 'Pontos de Coleta', icon: MapPin },
   ];
+
+  const handleSignOut = async () => {
+    console.log('Sign out clicked');
+    await signOut();
+  };
 
   return (
     <header className="bg-green-600 text-white shadow-lg">
@@ -41,29 +48,33 @@ const Header = () => {
           </nav>
 
           {/* User menu */}
-          {user ? (
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 text-green-100">
-                <User size={16} />
-                <span className="text-sm">{user.email}</span>
-              </div>
-              <button
-                onClick={signOut}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
+          <div className="flex items-center space-x-4">
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : user ? (
+              <>
+                <div className="hidden md:flex items-center space-x-2 text-green-100">
+                  <User size={16} />
+                  <span className="text-sm">{user.email}</span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
+                >
+                  <LogOut size={16} />
+                  <span className="hidden md:inline">Sair</span>
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                className="flex items-center space-x-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
               >
-                <LogOut size={16} />
-                <span className="hidden md:inline">Sair</span>
-              </button>
-            </div>
-          ) : (
-            <Link
-              to="/auth"
-              className="flex items-center space-x-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
-            >
-              <User size={16} />
-              <span>Entrar</span>
-            </Link>
-          )}
+                <User size={16} />
+                <span>Entrar</span>
+              </Link>
+            )}
+          </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden">

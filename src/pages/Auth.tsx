@@ -11,20 +11,38 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const { user, signIn, signUp } = useAuth();
 
+  console.log('Auth page - Current user:', user?.email);
+
   // Redirect if already logged in
   if (user) {
+    console.log('User is logged in, redirecting to home');
     return <Navigate to="/" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email || !password) {
+      console.log('Missing email or password');
+      return;
+    }
+    
+    console.log('Form submitted:', { isLogin, email });
     setLoading(true);
 
     try {
       if (isLogin) {
-        await signIn(email, password);
+        console.log('Attempting login...');
+        const { error } = await signIn(email, password);
+        if (error) {
+          console.error('Login failed:', error);
+        }
       } else {
-        await signUp(email, password);
+        console.log('Attempting signup...');
+        const { error } = await signUp(email, password);
+        if (error) {
+          console.error('Signup failed:', error);
+        }
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -65,6 +83,7 @@ const Auth = () => {
                   required
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
                   placeholder="seu@email.com"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -84,13 +103,14 @@ const Auth = () => {
                   minLength={6}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
                   placeholder="Digite sua senha"
+                  disabled={loading}
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !email || !password}
               className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {loading ? (
@@ -107,7 +127,8 @@ const Auth = () => {
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-green-600 hover:text-green-700 font-medium"
+              disabled={loading}
+              className="text-green-600 hover:text-green-700 font-medium disabled:opacity-50"
             >
               {isLogin 
                 ? 'Não tem uma conta? Cadastre-se' 
