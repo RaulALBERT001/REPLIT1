@@ -99,6 +99,22 @@ export const useGenerateQuizQuestions = () => {
   });
 };
 
+export const useSeedData = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      return apiRequest('/api/seed-data', {
+        method: 'POST',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['quiz-questions'] });
+    },
+  });
+};
+
 export const useApiChallenges = () => {
   return useQuery({
     queryKey: ['challenges'],

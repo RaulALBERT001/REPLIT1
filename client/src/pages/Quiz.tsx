@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HelpCircle, CheckCircle, XCircle, RotateCcw, Sparkles } from 'lucide-react';
-import { useApiQuizQuestions, useSubmitQuizAnswer, useGenerateQuizQuestions, useUserScore } from '../hooks/useScoring';
+import { useApiQuizQuestions, useSubmitQuizAnswer, useGenerateQuizQuestions, useUserScore, useSeedData } from '../hooks/useScoring';
 import { Button } from '@/components/ui/button';
 import RankMedal from '../components/RankMedal';
 
@@ -10,10 +10,19 @@ const Quiz = () => {
   const { data: userScore } = useUserScore();
   const submitAnswer = useSubmitQuizAnswer();
   const generateQuestions = useGenerateQuizQuestions();
+  const seedData = useSeedData();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+
+  // Auto-seed data if no quiz questions exist
+  useEffect(() => {
+    if (!isLoading && quizData && quizData.length === 0 && !seedData.isPending) {
+      console.log('No quiz questions found, seeding initial data...');
+      seedData.mutate();
+    }
+  }, [quizData, isLoading, seedData]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     const newAnswers = [...selectedAnswers];

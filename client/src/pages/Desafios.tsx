@@ -1,8 +1,8 @@
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import ChallengeItem from '../components/ChallengeItem';
 import RandomChallenge from '../components/RandomChallenge';
-import { useApiChallenges, useUserProgress, useToggleChallengeScore, useGenerateChallenges, useUserScore } from '../hooks/useScoring';
+import { useApiChallenges, useUserProgress, useToggleChallengeScore, useGenerateChallenges, useUserScore, useSeedData } from '../hooks/useScoring';
 import { Target, Trophy, Sparkles, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import RankMedal from '../components/RankMedal';
@@ -13,6 +13,15 @@ const Desafios = () => {
   const { data: userScore } = useUserScore();
   const toggleProgress = useToggleChallengeScore();
   const generateChallenges = useGenerateChallenges();
+  const seedData = useSeedData();
+
+  // Auto-seed data if no challenges exist
+  useEffect(() => {
+    if (!challengesLoading && challenges && challenges.length === 0 && !seedData.isPending) {
+      console.log('No challenges found, seeding initial data...');
+      seedData.mutate();
+    }
+  }, [challenges, challengesLoading, seedData]);
 
   const progressMap = useMemo(() => {
     if (!userProgress) return new Map();
