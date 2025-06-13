@@ -1,0 +1,21 @@
+
+[
+  {
+    "id": 1,
+    "title": "Reciclagem: Transformando Resíduos em Recursos",
+    "description": "Aprenda como a reciclagem adequada pode reduzir significativamente seu impacto ambiental. Cada tonelada de papel reciclado evita o corte de 17 árvores.",
+    "image": "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b"
+  },
+  {
+    "id": 2,
+    "title": "Compostagem Doméstica: Nutrientes do Lixo Orgânico",
+    "description": "Transforme restos de comida em adubo rico para suas plantas. A compostagem reduz em até 30% o volume de lixo doméstico.",
+    "image": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b"
+  },
+  {
+    "id": 3,
+    "title": "Redução de Desperdício: Pequenas Ações, Grande Impacto",
+    "description": "Descubra como pequenas mudanças no dia a dia podem reduzir drasticamente a produção de resíduos. Cada pessoa produz em média 1kg de lixo por dia.",
+    "image": "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13"
+  }
+]

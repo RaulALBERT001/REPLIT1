@@ -1,0 +1,27 @@
+
+[
+  {
+    "id": 1,
+    "name": "EcoPonto Centro",
+    "address": "Rua das Flores, 123 - Centro",
+    "wasteTypes": ["Papel", "Plástico", "Vidro", "Metal"]
+  },
+  {
+    "id": 2,
+    "name": "Coleta Eletrônicos TechGreen",
+    "address": "Av. Tecnologia, 456 - Bairro Tech",
+    "wasteTypes": ["Eletrônicos", "Pilhas", "Baterias", "Cabos"]
+  },
+  {
+    "id": 3,
+    "name": "Ponto Verde Orgânicos",
+    "address": "Rua Sustentável, 789 - Vila Verde",
+    "wasteTypes": ["Orgânicos", "Óleo de cozinha", "Compostáveis"]
+  },
+  {
+    "id": 4,
+    "name": "ReciclaFácil Shopping",
+    "address": "Shopping EcoLife, Loja 12 - Centro Comercial",
+    "wasteTypes": ["Papel", "Plástico", "Vidro", "Roupas"]
+  }
+]
