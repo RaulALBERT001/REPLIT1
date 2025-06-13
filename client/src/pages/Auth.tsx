@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
 import { Leaf, Mail, Lock, User } from 'lucide-react';
 
@@ -9,6 +9,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useLocation();
   const { user, signIn, signUp } = useAuth();
 
   console.log('Auth page - Current user:', user?.email);
@@ -16,7 +17,8 @@ const Auth = () => {
   // Redirect if already logged in
   if (user) {
     console.log('User is logged in, redirecting to home');
-    return <Navigate to="/" replace />;
+    setLocation('/');
+    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

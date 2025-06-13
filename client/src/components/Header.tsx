@@ -1,10 +1,10 @@
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'wouter';
 import { Home, BookOpen, Target, HelpCircle, MapPin, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
-  const location = useLocation();
+  const [location] = useLocation();
   const { user, signOut, loading } = useAuth();
 
   console.log('Header - Current user:', user?.email, 'Loading:', loading);
