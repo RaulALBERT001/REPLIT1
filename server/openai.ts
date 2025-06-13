@@ -20,7 +20,9 @@ export async function generateChallenges(): Promise<{ challenge: string; points:
       response_format: { type: "json_object" },
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error('No content received from OpenAI');
+    const result = JSON.parse(content);
     return result.challenges || [];
   } catch (error) {
     console.error('Error generating challenges:', error);
@@ -45,7 +47,9 @@ export async function generateQuizQuestions(): Promise<{ question: string; optio
       response_format: { type: "json_object" },
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error('No content received from OpenAI');
+    const result = JSON.parse(content);
     return result.questions || [];
   } catch (error) {
     console.error('Error generating quiz questions:', error);

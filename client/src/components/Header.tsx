@@ -2,10 +2,13 @@
 import { Link, useLocation } from 'wouter';
 import { Home, BookOpen, Target, HelpCircle, MapPin, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserScore } from '@/hooks/useScoring';
+import RankMedal from './RankMedal';
 
 const Header = () => {
   const [location] = useLocation();
   const { user, signOut, loading } = useAuth();
+  const { data: userScore } = useUserScore();
 
   console.log('Header - Current user:', user?.email, 'Loading:', loading);
 
@@ -53,9 +56,16 @@ const Header = () => {
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : user ? (
               <>
-                <div className="hidden md:flex items-center space-x-2 text-green-100">
+                <div className="hidden md:flex items-center space-x-3 text-green-100">
                   <User size={16} />
                   <span className="text-sm">{user.email}</span>
+                  {userScore && (
+                    <RankMedal 
+                      rank={userScore.rank} 
+                      points={userScore.total_points}
+                      size="small"
+                    />
+                  )}
                 </div>
                 <button
                   onClick={handleSignOut}

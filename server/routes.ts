@@ -148,6 +148,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Generation routes
+  app.post("/api/generate-challenges", async (req, res) => {
+    try {
+      const generatedChallenges = await generateChallenges();
+      
+      // Save generated challenges to database
+      const savedChallenges = [];
+      for (const challengeData of generatedChallenges) {
+        const challenge = await storage.createChallenge({
+          challenge: challengeData.challenge,
+          is_fixed: false,
+          points: challengeData.points
+        });
+        savedChallenges.push(challenge);
+      }
+      
+      res.json(savedChallenges);
+    } catch (error) {
+      console.error('Error generating challenges:', error);
+      res.status(500).json({ error: 'Failed to generate challenges' });
+    }
+  });
+
+  app.post("/api/generate-quiz-questions", async (req, res) => {
+    try {
+      const generatedQuestions = await generateQuizQuestions();
+      
+      // Save generated questions to database
+      const savedQuestions = [];
+      for (const questionData of generatedQuestions) {
+        const question = await storage.createQuizQuestion({
+          question: questionData.question,
+          options: questionData.options,
+          correct_answer: questionData.correct_answer,
+          points: questionData.points
+        });
+        savedQuestions.push(question);
+      }
+      
+      res.json(savedQuestions);
+    } catch (error) {
+      console.error('Error generating quiz questions:', error);
+      res.status(500).json({ error: 'Failed to generate quiz questions' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
