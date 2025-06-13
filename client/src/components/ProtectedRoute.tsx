@@ -1,5 +1,6 @@
 
-import { Navigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -8,8 +9,16 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const [location, setLocation] = useLocation();
 
   console.log('ProtectedRoute - User:', user?.email, 'Loading:', loading);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      console.log('No user found, redirecting to auth');
+      setLocation('/auth');
+    }
+  }, [user, loading, setLocation]);
 
   if (loading) {
     return (
@@ -23,8 +32,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
-    console.log('No user found, redirecting to auth');
-    return <Navigate to="/auth" replace />;
+    return null;
   }
 
   console.log('User authenticated, rendering protected content');

@@ -1,5 +1,6 @@
 
 import DailyPhrase from '../components/DailyPhrase';
+import { Link } from 'wouter';
 import { Leaf, Target, Award } from 'lucide-react';
 
 const Home = () => {

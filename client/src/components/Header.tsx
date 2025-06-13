@@ -36,7 +36,7 @@ const Header = () => {
                 key={path}
                 to={path}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-                  location.pathname === path
+                  location === path
                     ? 'bg-green-700 text-white'
                     : 'text-green-100 hover:text-white hover:bg-green-500'
                 }`}
@@ -84,7 +84,7 @@ const Header = () => {
                   key={path}
                   to={path}
                   className={`p-2 rounded-md transition-colors ${
-                    location.pathname === path
+                    location === path
                       ? 'bg-green-700 text-white'
                       : 'text-green-100 hover:text-white hover:bg-green-500'
                   }`}
