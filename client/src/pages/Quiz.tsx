@@ -1,13 +1,19 @@
 
 import { useState } from 'react';
-import { HelpCircle, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
-import { useQuizQuestions } from '../hooks/useSupabaseData';
+import { HelpCircle, CheckCircle, XCircle, RotateCcw, Sparkles } from 'lucide-react';
+import { useApiQuizQuestions, useSubmitQuizAnswer, useGenerateQuizQuestions, useUserScore } from '../hooks/useScoring';
+import { Button } from '@/components/ui/button';
+import RankMedal from '../components/RankMedal';
 
 const Quiz = () => {
-  const { data: quizData, isLoading, error } = useQuizQuestions();
+  const { data: quizData, isLoading, error } = useApiQuizQuestions();
+  const { data: userScore } = useUserScore();
+  const submitAnswer = useSubmitQuizAnswer();
+  const generateQuestions = useGenerateQuizQuestions();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
 
   const handleAnswerSelect = (answerIndex: number) => {
     const newAnswers = [...selectedAnswers];
@@ -18,11 +24,31 @@ const Quiz = () => {
   const handleNext = () => {
     if (!quizData) return;
     
+    // Submit answer for current question if not already answered
+    if (!answeredQuestions.has(currentQuestion)) {
+      const currentQuestionData = quizData[currentQuestion];
+      const selectedAnswer = selectedAnswers[currentQuestion];
+      
+      if (selectedAnswer !== undefined) {
+        submitAnswer.mutate({
+          questionId: currentQuestionData.id,
+          selectedAnswer,
+          correctAnswer: currentQuestionData.correct_answer
+        });
+        
+        setAnsweredQuestions(prev => new Set(prev).add(currentQuestion));
+      }
+    }
+    
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       setShowResults(true);
     }
+  };
+
+  const handleGenerateQuestions = () => {
+    generateQuestions.mutate();
   };
 
   const handlePrevious = () => {

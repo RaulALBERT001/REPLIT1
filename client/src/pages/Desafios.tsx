@@ -2,19 +2,23 @@
 import { useMemo } from 'react';
 import ChallengeItem from '../components/ChallengeItem';
 import RandomChallenge from '../components/RandomChallenge';
-import { useFixedChallenges, useUserProgress, useToggleChallengeProgress } from '../hooks/useSupabaseData';
-import { Target, Trophy } from 'lucide-react';
+import { useApiChallenges, useUserProgress, useToggleChallengeScore, useGenerateChallenges, useUserScore } from '../hooks/useScoring';
+import { Target, Trophy, Sparkles, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import RankMedal from '../components/RankMedal';
 
 const Desafios = () => {
-  const { data: challenges, isLoading: challengesLoading } = useFixedChallenges();
+  const { data: challenges, isLoading: challengesLoading } = useApiChallenges();
   const { data: userProgress, isLoading: progressLoading } = useUserProgress();
-  const toggleProgress = useToggleChallengeProgress();
+  const { data: userScore } = useUserScore();
+  const toggleProgress = useToggleChallengeScore();
+  const generateChallenges = useGenerateChallenges();
 
   const progressMap = useMemo(() => {
     if (!userProgress) return new Map();
     
     const map = new Map();
-    userProgress.forEach(progress => {
+    userProgress.forEach((progress: any) => {
       map.set(progress.challenge_id, progress.is_completed);
     });
     return map;
@@ -22,15 +26,15 @@ const Desafios = () => {
 
   const completedCount = useMemo(() => {
     if (!challenges) return 0;
-    return challenges.filter(challenge => progressMap.get(challenge.id)).length;
+    return challenges.filter((challenge: any) => progressMap.get(challenge.id)).length;
   }, [challenges, progressMap]);
 
   const handleToggleChallenge = async (challengeId: string) => {
-    const isCurrentlyCompleted = progressMap.get(challengeId) || false;
-    toggleProgress.mutate({
-      challengeId,
-      isCompleted: !isCurrentlyCompleted
-    });
+    toggleProgress.mutate({ challengeId });
+  };
+
+  const handleGenerateChallenges = () => {
+    generateChallenges.mutate();
   };
 
   if (challengesLoading || progressLoading) {
@@ -90,10 +94,54 @@ const Desafios = () => {
           </div>
         </div>
 
+        {/* Generation Button */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Gerar Novos Desafios</h2>
+              <p className="text-gray-600">Use IA para criar novos desafios sustentáveis personalizados</p>
+            </div>
+            <Button 
+              onClick={handleGenerateChallenges}
+              disabled={generateChallenges.isPending}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {generateChallenges.isPending ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Gerando...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Sparkles size={16} />
+                  <span>Gerar Desafios</span>
+                </div>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* User Score Display */}
+        {userScore && (
+          <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white p-6 rounded-lg mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold mb-2">Sua Pontuação</h2>
+                <p className="text-blue-100">Continue completando desafios para subir de rank!</p>
+              </div>
+              <RankMedal 
+                rank={userScore.rank} 
+                points={userScore.total_points}
+                size="large"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Challenges List */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Seus Desafios</h2>
-          {challenges?.map((challenge) => (
+          {challenges?.map((challenge: any) => (
             <ChallengeItem
               key={challenge.id}
               challenge={challenge.challenge}
