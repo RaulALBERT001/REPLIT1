@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'wouter';
-import { Home, BookOpen, Target, HelpCircle, MapPin, LogOut, User } from 'lucide-react';
+import { Home, Target, HelpCircle, LogOut, User, Trophy } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserScore } from '@/hooks/useScoring';
 import RankMedal from './RankMedal';
@@ -14,10 +14,8 @@ const Header = () => {
 
   const navItems = [
     { path: '/', label: 'Início', icon: Home },
-    { path: '/conscientizacao', label: 'Conscientização', icon: BookOpen },
     { path: '/desafios', label: 'Desafios', icon: Target },
     { path: '/quiz', label: 'Quiz', icon: HelpCircle },
-    { path: '/pontos-coleta', label: 'Pontos de Coleta', icon: MapPin },
   ];
 
   const handleSignOut = async () => {
@@ -26,39 +24,58 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-green-600 text-white shadow-lg">
-      <div className="container mx-auto px-4 py-4">
+    <header className="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-xl border-b-4 border-green-500">
+      <div className="container mx-auto px-6 py-5">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-green-50 hover:text-white transition-colors">
-            🌱 Sustenta Desafio
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-3 text-white hover:text-green-100 transition-colors group">
+            <div className="bg-white text-green-600 p-2 rounded-full group-hover:scale-110 transition-transform">
+              🌱
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Sustenta Desafio</h1>
+              <p className="text-xs text-green-200 hidden sm:block">Seu app de sustentabilidade</p>
+            </div>
           </Link>
           
-          <nav className="hidden md:flex space-x-6">
+          {/* Navigation */}
+          <nav className="hidden md:flex items-center space-x-2 bg-green-700/30 rounded-full px-6 py-2 backdrop-blur-sm">
             {navItems.map(({ path, label, icon: Icon }) => (
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200 ${
                   location === path
-                    ? 'bg-green-700 text-white'
-                    : 'text-green-100 hover:text-white hover:bg-green-500'
+                    ? 'bg-white text-green-700 shadow-lg font-semibold'
+                    : 'text-green-100 hover:text-white hover:bg-green-600/50'
                 }`}
               >
                 <Icon size={18} />
-                <span>{label}</span>
+                <span className="font-medium">{label}</span>
               </Link>
             ))}
           </nav>
 
-          {/* User menu */}
+          {/* User Section */}
           <div className="flex items-center space-x-4">
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : user ? (
               <>
-                <div className="hidden md:flex items-center space-x-3 text-green-100">
-                  <User size={16} />
-                  <span className="text-sm">{user.email}</span>
+                {/* User Info */}
+                <div className="hidden lg:flex items-center space-x-3 bg-green-700/30 rounded-full px-4 py-2 backdrop-blur-sm">
+                  <div className="bg-white text-green-600 p-1.5 rounded-full">
+                    <User size={14} />
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-green-100 truncate max-w-32">{user.email}</p>
+                    {userScore && (
+                      <div className="flex items-center space-x-2">
+                        <Trophy size={12} className="text-yellow-300" />
+                        <span className="text-xs text-green-200">{userScore.total_points} pts</span>
+                      </div>
+                    )}
+                  </div>
                   {userScore && (
                     <RankMedal 
                       rank={userScore.rank} 
@@ -67,18 +84,20 @@ const Header = () => {
                     />
                   )}
                 </div>
+                
+                {/* Sign Out Button */}
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-lg"
                 >
                   <LogOut size={16} />
-                  <span className="hidden md:inline">Sair</span>
+                  <span className="hidden sm:inline font-medium">Sair</span>
                 </button>
               </>
             ) : (
               <Link
                 to="/auth"
-                className="flex items-center space-x-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors"
+                className="flex items-center space-x-2 px-6 py-2 rounded-full bg-white text-green-700 hover:bg-green-50 transition-colors font-medium shadow-lg"
               >
                 <User size={16} />
                 <span>Entrar</span>
@@ -86,17 +105,17 @@ const Header = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile Navigation */}
           <div className="md:hidden">
-            <nav className="flex space-x-2">
+            <nav className="flex space-x-1 bg-green-700/30 rounded-full p-1 backdrop-blur-sm">
               {navItems.map(({ path, icon: Icon }) => (
                 <Link
                   key={path}
                   to={path}
-                  className={`p-2 rounded-md transition-colors ${
+                  className={`p-3 rounded-full transition-all duration-200 ${
                     location === path
-                      ? 'bg-green-700 text-white'
-                      : 'text-green-100 hover:text-white hover:bg-green-500'
+                      ? 'bg-white text-green-700 shadow-lg'
+                      : 'text-green-100 hover:text-white hover:bg-green-600/50'
                   }`}
                 >
                   <Icon size={20} />

@@ -10,10 +10,8 @@ import Header from "./components/Header";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import Conscientizacao from "./pages/Conscientizacao";
 import Desafios from "./pages/Desafios";
 import Quiz from "./pages/Quiz";
-import PontosColeta from "./pages/PontosColeta";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -33,11 +31,6 @@ const App = () => (
                 <Home />
               </ProtectedRoute>
             </Route>
-            <Route path="/conscientizacao">
-              <ProtectedRoute>
-                <Conscientizacao />
-              </ProtectedRoute>
-            </Route>
             <Route path="/desafios">
               <ProtectedRoute>
                 <Desafios />
@@ -46,11 +39,6 @@ const App = () => (
             <Route path="/quiz">
               <ProtectedRoute>
                 <Quiz />
-              </ProtectedRoute>
-            </Route>
-            <Route path="/pontos-coleta">
-              <ProtectedRoute>
-                <PontosColeta />
               </ProtectedRoute>
             </Route>
             <Route>
